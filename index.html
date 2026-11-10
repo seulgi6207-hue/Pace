@@ -162,6 +162,7 @@ tr.final td { font-weight: 700; border-top: 2px solid var(--accent); }
         <label class="field"><input type="number" id="m" inputmode="numeric" min="0" max="999" value="0"><span>분</span></label>
         <label class="field"><input type="number" id="s" inputmode="numeric" min="0" max="999" value="0"><span>초</span></label>
       </div>
+      <div class="chips" id="targetChips" aria-label="자주 쓰는 목표"></div>
     </div>
 
     <div class="group" id="paceInputs" hidden>
@@ -192,7 +193,7 @@ tr.final td { font-weight: 700; border-top: 2px solid var(--accent); }
       </table>
     </div>
     <p class="empty" id="splitEmpty" hidden>기록과 거리를 입력하면 구간별 통과 시간이 표시됩니다.</p>
-    <p class="note">일정한 페이스로 달린다고 가정한 값입니다. 하프는 21.0975km, 풀은 42.195km로 계산합니다. (앱 버전 4)</p>
+    <p class="note">일정한 페이스로 달린다고 가정한 값입니다. 하프는 21.0975km, 풀은 42.195km로 계산합니다.</p>
   </section>
 </main>
 
@@ -228,31 +229,13 @@ var DIST = {
   'full': { label: '풀',   km: 42.195,  finalLabel: '풀 42.2km' },
   'custom': { label: '직접 입력' }
 };
-// 거리마다 목표 시간과 페이스를 따로 기억합니다. 처음 열면 아래 기본값에서 시작합니다.
-var DEF_TIME = { '5k': 1500, '10k': 3000, 'half': 7200, 'full': 14400, 'custom': 3600 };
-var DEF_PACE = { '5k': 300, '10k': 300, 'half': 341, 'full': 341, 'custom': 360 };
-var MEM_KEY = 'pace-mem-v1';
-var mem = { time: {}, pace: {}, dist: 'half', mode: 'time', km: 12 };
-try {
-  var saved = JSON.parse(localStorage.getItem(MEM_KEY) || 'null');
-  if (saved && typeof saved === 'object') {
-    if (saved.time && typeof saved.time === 'object') mem.time = saved.time;
-    if (saved.pace && typeof saved.pace === 'object') mem.pace = saved.pace;
-    if (DIST[saved.dist]) mem.dist = saved.dist;
-    if (saved.mode === 'time' || saved.mode === 'pace') mem.mode = saved.mode;
-    if (isFinite(saved.km) && saved.km > 0) mem.km = saved.km;
-  }
-} catch (e) {}
-var st = { mode: mem.mode, dist: mem.dist };
-function memTime(d) { var v = mem.time[d]; return v > 0 ? v : DEF_TIME[d]; }
-function memPace(d) { var v = mem.pace[d]; return v > 0 ? v : DEF_PACE[d]; }
-function saveMem() {
-  mem.dist = st.dist;
-  mem.mode = st.mode;
-  var k = parseFloat(String($('customKm').value).replace(',', '.'));
-  if (isFinite(k) && k > 0) mem.km = k;
-  try { localStorage.setItem(MEM_KEY, JSON.stringify(mem)); } catch (e) {}
-}
+var TARGETS = {
+  '5k':   [1200, 1350, 1500, 1800],
+  '10k':  [2700, 3000, 3300, 3600],
+  'half': [5400, 6300, 7200, 8100, 9000],
+  'full': [12600, 14400, 16200, 18000]
+};
+var st = { mode: 'time', dist: 'half' };
 function $(id) { return document.getElementById(id); }
 
 function num(id, max) {
@@ -313,6 +296,22 @@ function render() {
   $('timeInputs').hidden = st.mode !== 'time';
   $('paceInputs').hidden = st.mode !== 'pace';
 
+  // 목표 기록 빠른 선택
+  var tbox = $('targetChips');
+  tbox.innerHTML = '';
+  var list = st.mode === 'time' ? (TARGETS[st.dist] || []) : [];
+  var cur = timeSec();
+  list.forEach(function (sec) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip small';
+    b.dataset.sec = sec;
+    b.textContent = fmtTime(sec);
+    b.setAttribute('aria-pressed', String(sec === cur));
+    tbox.appendChild(b);
+  });
+  tbox.hidden = list.length === 0;
+
   // 결과 패널
   if (st.mode === 'time') {
     $('resLabel').textContent = '목표 달성에 필요한 페이스';
@@ -352,52 +351,33 @@ $('distChips').addEventListener('click', function (e) {
   var b = e.target.closest('.chip');
   if (!b) return;
   st.dist = b.dataset.dist;
-  setTime(memTime(st.dist));
-  setPace(memPace(st.dist));
-  saveMem();
+  var defaults = { '5k': 1500, '10k': 3000, 'half': 7200, 'full': 14400 };
+  if (st.mode === 'time' && defaults[st.dist]) setTime(defaults[st.dist]);
+  render();
+});
+$('targetChips').addEventListener('click', function (e) {
+  var b = e.target.closest('.chip');
+  if (!b) return;
+  setTime(Number(b.dataset.sec));
   render();
 });
 $('modeTime').addEventListener('click', function () {
   if (st.mode === 'time') return;
   var d = curKm(), p = paceIn();
-  if (d > 0 && p > 0) { setTime(p * d); mem.time[st.dist] = Math.round(p * d); }
+  if (d > 0 && p > 0) setTime(p * d);
   st.mode = 'time';
-  saveMem();
   render();
 });
 $('modePace').addEventListener('click', function () {
   if (st.mode === 'pace') return;
   var d = curKm(), t = timeSec();
-  if (d > 0 && t > 0) { setPace(t / d); mem.pace[st.dist] = Math.round(t / d); }
+  if (d > 0 && t > 0) setPace(t / d);
   st.mode = 'pace';
-  saveMem();
   render();
 });
-['h', 'm', 's'].forEach(function (id) {
-  $(id).addEventListener('input', function () {
-    var t = timeSec();
-    if (t > 0) mem.time[st.dist] = t;
-    saveMem();
-    render();
-  });
+['h', 'm', 's', 'pm', 'ps', 'customKm'].forEach(function (id) {
+  $(id).addEventListener('input', render);
 });
-['pm', 'ps'].forEach(function (id) {
-  $(id).addEventListener('input', function () {
-    var p = paceIn();
-    if (p > 0) mem.pace[st.dist] = p;
-    saveMem();
-    render();
-  });
-});
-$('customKm').addEventListener('input', function () {
-  saveMem();
-  render();
-});
-
-// 저장된 값으로 입력칸을 채웁니다.
-$('customKm').value = mem.km;
-setTime(memTime(st.dist));
-setPace(memPace(st.dist));
 
 render();
 

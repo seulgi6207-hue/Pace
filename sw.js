@@ -1,6 +1,6 @@
-// 서비스 워커: 인터넷이 되면 항상 최신 파일을 받고, 오프라인일 때만 저장된 파일을 씁니다.
-// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려 주세요.
-const CACHE = 'pace-v4';
+// 서비스 워커: 앱 파일을 저장해 두고 오프라인에서도 열리게 합니다.
+// 앱을 수정해서 다시 올릴 때는 아래 버전 숫자를 올려야 기존 사용자에게 반영됩니다.
+const CACHE = 'pace-v1';
 const SHELL = [
   './',
   './index.html',
@@ -11,17 +11,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => Promise.all(SHELL.map((u) =>
-        // 브라우저가 가진 옛 사본을 건너뛰고 서버에서 새로 받습니다.
-        fetch(new Request(u, { cache: 'reload' })).then((res) => {
-          if (!res.ok) throw new Error(u + ' ' + res.status);
-          return cache.put(u, res);
-        })
-      )))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
@@ -32,36 +22,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-async function networkFirst(req) {
-  const cache = await caches.open(CACHE);
-  try {
-    const res = await fetch(req, { cache: 'no-cache' });
-    if (res && res.ok) cache.put(req, res.clone());
-    return res;
-  } catch (e) {
-    const cached = await cache.match(req, { ignoreSearch: true });
-    if (cached) return cached;
-    if (req.mode === 'navigate') {
-      const index = await cache.match('./index.html');
-      if (index) return index;
-    }
-    return Response.error();
-  }
-}
-
-async function cacheFirst(req) {
-  const cache = await caches.open(CACHE);
-  const cached = await cache.match(req);
-  if (cached) return cached;
-  try {
-    const res = await fetch(req);
-    if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
-    return res;
-  } catch (e) {
-    return Response.error();
-  }
-}
-
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -69,5 +29,22 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (!sameOrigin && !isFont) return;
-  event.respondWith(sameOrigin ? networkFirst(req) : cacheFirst(req));
+
+  // 저장된 파일을 먼저 보여주고, 뒤에서 최신 파일로 갱신합니다.
+  event.respondWith(
+    caches.open(CACHE).then(async (cache) => {
+      const cached = await cache.match(req, { ignoreSearch: true });
+      const network = fetch(req)
+        .then((res) => {
+          if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
+          return res;
+        })
+        .catch(() => null);
+      if (cached) return cached;
+      const res = await network;
+      if (res) return res;
+      if (req.mode === 'navigate') return cache.match('./index.html');
+      return Response.error();
+    })
+  );
 });

@@ -1,14 +1,17 @@
 {
-  "name": "PACE RUN - 러닝 페이스 계산기",
-  "short_name": "PACE RUN",
-  "lang": "ko-KR",
+  "name": "러닝 페이스 계산기",
+  "short_name": "페이스",
+  "description": "목표 기록에 필요한 페이스와 예상 완주 기록을 계산합니다.",
+  "lang": "ko",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0b0d0b",
-  "theme_color": "#10120f",
+  "orientation": "portrait",
+  "background_color": "#EEF1F5",
+  "theme_color": "#121821",
   "icons": [
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
