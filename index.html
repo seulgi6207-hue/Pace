@@ -1,144 +1,442 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#10120f">
-  <meta name="description" content="PACE RUN - 러닝 페이스와 구간별 통과 기록 계산기">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <title>PACE RUN</title>
-  <style>
-    :root{color-scheme:dark;--bg:#0b0d0b;--panel:#151915;--panel2:#1d231d;--line:#303830;--lime:#c7ff35;--muted:#9ba59a;--white:#f5f7f2}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 18px env(safe-area-inset-bottom);font-variant-numeric:tabular-nums}
-    main{max-width:560px;margin:0 auto;padding:22px 0 40px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
-    .brand{font-size:25px;font-weight:900;letter-spacing:1.5px}.brand span{color:var(--lime)}.tag{font-size:10px;color:var(--lime);border:1px solid #647d28;border-radius:30px;padding:6px 9px;letter-spacing:1px}
-    .eyebrow{font-size:11px;color:var(--muted);letter-spacing:1.6px;font-weight:700;margin:0 0 10px}
-    h1{font-size:28px;line-height:1.18;margin:0 0 8px;font-weight:850} .sub{color:var(--muted);font-size:13px;margin:0 0 24px}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;background:#171b17;padding:4px;border-radius:13px;margin-bottom:22px}
-    .tabs button{border:0;background:transparent;color:var(--muted);padding:12px 7px;border-radius:10px;font-weight:750;font-size:13px}
-    .tabs button.active{background:var(--lime);color:#11150b}
-    .section{margin:20px 0 9px;font-size:13px;font-weight:800}
-    .distances{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    button,.distance{cursor:pointer}.distance{background:var(--panel);border:1px solid var(--line);color:var(--white);border-radius:11px;padding:12px 3px;font-weight:750;font-size:13px}
-    .distance.active{border-color:var(--lime);background:#252d19;color:var(--lime)}
-    .fields{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-    .field{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 10px}
-    input{width:100%;border:0;outline:0;background:transparent;color:var(--white);font-size:23px;font-weight:800;text-align:center;min-width:0}
-    .unit{text-align:center;color:var(--muted);font-size:11px;margin-top:4px}
-    .result{margin:22px 0;background:linear-gradient(145deg,#20291a,#151a14);border:1px solid #485b2b;border-radius:18px;padding:20px 16px;text-align:center}
-    .result-label{font-size:11px;color:#c2d1b2;letter-spacing:1.4px;font-weight:800}
-    .big{font-size:48px;line-height:1.15;font-weight:900;letter-spacing:-1px;color:var(--lime);margin:9px 0 5px}
-    .big small{font-size:15px;color:#d9e5c7;letter-spacing:0}
-    .meta{display:flex;justify-content:space-between;border-top:1px solid #3a4531;padding-top:12px;margin-top:13px;color:#c5cdbd;font-size:12px}
-    .meta strong{color:white}
-    .split-head{display:flex;justify-content:space-between;align-items:center;margin:25px 0 10px}
-    .split-head h2{font-size:16px;margin:0}.select{background:var(--panel);color:var(--white);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:12px}
-    table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:13px;overflow:hidden;font-size:13px}
-    th,td{padding:12px 10px;text-align:right;border-bottom:1px solid #293029}th{font-size:10px;color:var(--muted);letter-spacing:.6px;font-weight:700}th:first-child,td:first-child{text-align:left}tbody tr:last-child td{border-bottom:0}td:first-child{font-weight:800}td:nth-child(2){color:var(--lime);font-weight:800}
-    .copy{width:100%;margin-top:13px;background:var(--lime);color:#11150b;border:0;border-radius:12px;padding:14px;font-weight:850;font-size:14px}
-    .note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:17px}
-    .footer{margin-top:30px;text-align:center;color:#687267;font-size:10px;letter-spacing:1.5px}
-    .hidden{display:none!important}
-    @media(min-width:600px){body{padding-top:24px}.big{font-size:56px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>러닝 페이스 계산기</title>
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1117" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="페이스">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 한 열 앱. 입력 카드 → 시계 느낌의 결과 패널 → 구간 기록표 */
+:root {
+  --bg: #EEF1F5;
+  --surface: #FFFFFF;
+  --surface-2: #E4E9EF;
+  --ink: #121821;
+  --muted: #5D6B7A;
+  --line: #D5DCE4;
+  --accent: #E8501C;
+  --accent-ink: #FFFFFF;
+  --panel: #121821;
+  --panel-fg: #F2F5F8;
+  --panel-muted: #93A1B1;
+  --panel-accent: #FF7A45;
+  --font-display: 'Space Grotesk', 'Noto Sans KR', system-ui, sans-serif;
+  --font-body: 'Noto Sans KR', 'Inter', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1117;
+    --surface: #171E27;
+    --surface-2: #232C38;
+    --ink: #E8EDF3;
+    --muted: #8D9BAB;
+    --line: #2A3441;
+    --accent: #FF7A45;
+    --accent-ink: #1A0D06;
+    --panel: #05080C;
+    --panel-fg: #F2F5F8;
+    --panel-muted: #8D9BAB;
+    --panel-accent: #FF7A45;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1117;
+  --surface: #171E27;
+  --surface-2: #232C38;
+  --ink: #E8EDF3;
+  --muted: #8D9BAB;
+  --line: #2A3441;
+  --accent: #FF7A45;
+  --accent-ink: #1A0D06;
+  --panel: #05080C;
+  --panel-fg: #F2F5F8;
+  --panel-muted: #8D9BAB;
+  --panel-accent: #FF7A45;
+  color-scheme: dark;
+}
+
+html { background: var(--bg); -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 520px; margin: 0 auto; display: grid; gap: 16px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: .14em; color: var(--muted); font-weight: 500; }
+h1 { margin: 2px 0 0; font-family: var(--font-display); font-size: 28px; line-height: 1.2; text-wrap: balance; }
+
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 12px; }
+.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 500; padding: 10px 8px; border-radius: 9px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 18px; }
+.group { display: grid; gap: 8px; min-width: 0; }
+.label { font-size: 13px; color: var(--muted); font-weight: 500; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.chip.small { font-size: 13px; padding: 6px 11px; }
+
+.tri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.duo { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field span { font-size: 12px; color: var(--muted); text-align: center; }
+input[type="number"] {
+  width: 100%; min-width: 0; font-family: var(--font-display); font-size: 28px; font-weight: 700; text-align: center;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 4px;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input.km { font-size: 20px; text-align: left; padding: 10px 12px; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.panel { background: var(--panel); color: var(--panel-fg); border-radius: 18px; padding: 20px 18px 18px; display: grid; gap: 14px; }
+.panel .k { margin: 0; font-size: 13px; color: var(--panel-muted); }
+.big { margin: 0; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.big .num { font-family: var(--font-display); font-weight: 700; font-size: clamp(56px, 19vw, 88px); line-height: 1; color: var(--panel-accent); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.big .unit { font-size: 18px; color: var(--panel-muted); }
+.stats { margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border-top: 1px solid rgba(147,161,177,.25); padding-top: 14px; }
+.stats div { min-width: 0; }
+.stats dt { font-size: 12px; color: var(--panel-muted); }
+.stats dd { margin: 2px 0 0; font-family: var(--font-display); font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+
+.splits { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 10px; }
+.splits h2 { margin: 0; font-size: 15px; font-family: var(--font-display); }
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: right; font-size: 12px; font-weight: 500; color: var(--muted); padding: 6px 8px; }
+td { text-align: right; padding: 9px 8px; border-top: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+tr.final td { font-weight: 700; border-top: 2px solid var(--accent); }
+.empty { margin: 0; color: var(--muted); }
+.note { margin: 0; font-size: 12px; color: var(--muted); }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .chip, .seg button { transition: background .15s, color .15s; }
+}
+</style>
 </head>
 <body>
 <main>
-  <header class="top"><div class="brand">PACE <span>RUN</span></div><div class="tag">RUN SMARTER</div></header>
-  <p class="eyebrow">RUNNING PACE CALCULATOR</p>
-  <h1>목표를 입력하고,<br>나만의 페이스를 계산해.</h1>
-  <p class="sub">레이스 기록부터 구간별 통과 시간까지 한 번에.</p>
+  <header>
+    <p class="eyebrow">RUNNING PACE</p>
+    <h1>러닝 페이스 계산기</h1>
+  </header>
 
-  <div class="tabs">
-    <button id="goalTab" class="active" type="button">기록 → 페이스</button>
-    <button id="paceTab" type="button">페이스 → 기록</button>
+  <div class="seg" role="group" aria-label="계산 방식">
+    <button type="button" id="modeTime" aria-pressed="true">목표 기록 → 페이스</button>
+    <button type="button" id="modePace" aria-pressed="false">페이스 → 예상 기록</button>
   </div>
 
-  <section id="goalPanel">
-    <div class="section">01　레이스 거리</div>
-    <div class="distances" id="goalDistances">
-      <button class="distance" data-km="5">5K</button><button class="distance" data-km="10">10K</button>
-      <button class="distance active" data-km="21.0975">하프</button><button class="distance" data-km="42.195">풀</button>
+  <section class="card" aria-label="입력">
+    <div class="group">
+      <span class="label">거리</span>
+      <div class="chips" id="distChips"></div>
+      <div id="customWrap" hidden>
+        <input class="km" type="number" id="customKm" inputmode="decimal" min="0.1" step="0.1" value="12" aria-label="직접 입력 거리(km)">
+      </div>
     </div>
-    <div class="section">02　목표 완주 시간</div>
-    <div class="fields">
-      <label class="field"><input id="gh" type="number" min="0" max="99" value="2" inputmode="numeric"><div class="unit">시간</div></label>
-      <label class="field"><input id="gm" type="number" min="0" max="59" value="0" inputmode="numeric"><div class="unit">분</div></label>
-      <label class="field"><input id="gs" type="number" min="0" max="59" value="0" inputmode="numeric"><div class="unit">초</div></label>
+
+    <div class="group" id="timeInputs">
+      <span class="label">목표 기록</span>
+      <div class="tri">
+        <label class="field"><input type="number" id="h" inputmode="numeric" min="0" max="99" value="2"><span>시간</span></label>
+        <label class="field"><input type="number" id="m" inputmode="numeric" min="0" max="999" value="0"><span>분</span></label>
+        <label class="field"><input type="number" id="s" inputmode="numeric" min="0" max="999" value="0"><span>초</span></label>
+      </div>
+      <div class="chips" id="targetChips" aria-label="자주 쓰는 목표"></div>
+    </div>
+
+    <div class="group" id="paceInputs" hidden>
+      <span class="label">1km당 페이스</span>
+      <div class="duo">
+        <label class="field"><input type="number" id="pm" inputmode="numeric" min="0" max="99" value="5"><span>분</span></label>
+        <label class="field"><input type="number" id="ps" inputmode="numeric" min="0" max="999" value="41"><span>초</span></label>
+      </div>
     </div>
   </section>
 
-  <section id="pacePanel" class="hidden">
-    <div class="section">01　레이스 거리</div>
-    <div class="distances" id="paceDistances">
-      <button class="distance" data-km="5">5K</button><button class="distance" data-km="10">10K</button>
-      <button class="distance active" data-km="21.0975">하프</button><button class="distance" data-km="42.195">풀</button>
-    </div>
-    <div class="section">02　목표 페이스</div>
-    <div class="fields">
-      <label class="field"><input id="pm" type="number" min="0" max="59" value="5" inputmode="numeric"><div class="unit">분 / km</div></label>
-      <label class="field"><input id="ps" type="number" min="0" max="59" value="30" inputmode="numeric"><div class="unit">초</div></label>
-      <div class="field" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">평균 페이스</div>
-    </div>
+  <section class="panel" aria-live="polite">
+    <p class="k" id="resLabel">목표 달성에 필요한 페이스</p>
+    <p class="big"><span class="num" id="resMain">5:41</span><span class="unit" id="resUnit">/km</span></p>
+    <dl class="stats">
+      <div><dt>속도</dt><dd id="stSpeed">10.5 km/h</dd></div>
+      <div><dt>마일 페이스</dt><dd id="stMile">9:09 /mi</dd></div>
+      <div><dt id="stThirdLabel">완주 기록</dt><dd id="stThird">2:00:00</dd></div>
+    </dl>
   </section>
 
-  <section class="result" aria-live="polite">
-    <div class="result-label" id="resultLabel">필요한 평균 러닝 페이스</div>
-    <div class="big" id="bigResult">5:41 <small>/km</small></div>
-    <div class="meta"><span id="distanceLabel">하프 · 21.0975km</span><strong id="secondary">목표 2:00:00</strong></div>
+  <section class="splits" aria-label="구간 기록">
+    <h2>구간 기록</h2>
+    <div class="tablewrap" id="splitWrap">
+      <table>
+        <thead><tr><th>지점</th><th>구간</th><th>누적</th></tr></thead>
+        <tbody id="splitBody"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="splitEmpty" hidden>기록과 거리를 입력하면 구간별 통과 시간이 표시됩니다.</p>
+    <p class="note">일정한 페이스로 달린다고 가정한 값입니다. 하프는 21.0975km, 풀은 42.195km로 계산합니다.</p>
   </section>
-
-  <div class="split-head"><h2>구간별 예상 통과 기록</h2>
-    <select class="select" id="interval" aria-label="구간 간격"><option value="1">1km 간격</option><option value="5">5km 간격</option><option value="10">10km 간격</option></select>
-  </div>
-  <table><thead><tr><th>거리</th><th>누적 기록</th><th>구간 기록</th></tr></thead><tbody id="splits"></tbody></table>
-  <button class="copy" id="copyBtn">구간 기록표 복사하기</button>
-  <p class="note">※ 하프 21.0975km · 풀코스 42.195km 기준. 균등 페이스로 계산한 이론상 기록이며, 실제 코스 거리·GPS 오차·급수 및 정차 시간은 반영하지 않습니다.</p>
-  <div class="footer">PACE RUN · RUN YOUR OWN PACE</div>
 </main>
+
 <script>
-(() => {
-  const $ = id => document.getElementById(id);
-  let km = 21.0975, mode = 'goal', rows = [];
-  const names = {'5':'5K','10':'10K','21.0975':'하프','42.195':'풀코스'};
-  const fmt = n => { const x=Math.round(n); return `${Math.floor(x/60)}:${String(x%60).padStart(2,'0')}`; };
-  const clock = n => { const x=Math.round(n); return `${String(Math.floor(x/3600)).padStart(2,'0')}:${String(Math.floor(x%3600/60)).padStart(2,'0')}:${String(x%60).padStart(2,'0')}`; };
-  function selected(){ document.querySelectorAll('.distances').forEach(group=>group.querySelectorAll('button').forEach(b=>b.classList.toggle('active',Number(b.dataset.km)===km))); }
-  function render(){
-    const d=km, interval=Number($('interval').value);
-    let total, pace;
-    if(mode==='goal'){
-      const h=Number($('gh').value),m=Number($('gm').value),s=Number($('gs').value);
-      if([h,m,s].some(v=>!Number.isFinite(v)||v<0)||m>59||s>59||h>99||h*3600+m*60+s<=0){$('bigResult').textContent='시간 확인';$('splits').innerHTML='';return;}
-      total=h*3600+m*60+s; pace=total/d;
-      $('resultLabel').textContent='필요한 평균 러닝 페이스';
-      $('bigResult').innerHTML=`${fmt(pace)} <small>/km</small>`;
-      $('secondary').textContent=`목표 ${clock(total)}`;
-    } else {
-      const m=Number($('pm').value),s=Number($('ps').value);
-      if(!Number.isFinite(m)||!Number.isFinite(s)||m<0||m>59||s<0||s>59||m*60+s<=0){$('bigResult').textContent='페이스 확인';$('splits').innerHTML='';return;}
-      pace=m*60+s;total=pace*d;
-      $('resultLabel').textContent='예상 완주 기록';
-      $('bigResult').textContent=clock(total);
-      $('secondary').textContent=`평균 ${fmt(pace)}/km`;
-    }
-    $('distanceLabel').textContent=`${names[String(km)]||km+'km'} · ${km}km`;
-    rows=[];
-    for(let x=interval;x<d+0.000001;x+=interval) rows.push(Math.min(x,d));
-    if(!rows.length || Math.abs(rows[rows.length-1]-d)>0.000001) rows.push(d);
-    rows=[...new Set(rows)];
-    let prev=0;
-    $('splits').innerHTML=rows.map(x=>{const seg=clock(total*(x-prev)/d);prev=x;return `<tr><td>${Number.isInteger(x)?x:x.toFixed(3)}km</td><td>${clock(total*x/d)}</td><td>${seg}</td></tr>`;}).join('');
+/*LOGIC*/
+function pad(n) { return String(n).padStart(2, '0'); }
+function fmtPace(sec) {
+  if (!isFinite(sec) || sec <= 0) return '--:--';
+  var r = Math.round(sec), m = Math.floor(r / 60), s = r % 60;
+  return m + ':' + pad(s);
+}
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec <= 0) return '--:--';
+  var r = Math.round(sec), h = Math.floor(r / 3600), m = Math.floor((r % 3600) / 60), s = r % 60;
+  return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : m + ':' + pad(s);
+}
+function fmtKm(x) { return String(Math.round(x * 100) / 100); }
+function splits(paceSec, km) {
+  var step = km <= 10 ? 1 : 5, rows = [], prev = 0;
+  for (var d = step; d < km - 1e-9; d += step) {
+    rows.push({ d: d, seg: (d - prev) * paceSec, cum: d * paceSec, final: false });
+    prev = d;
   }
-  document.querySelectorAll('.distances').forEach(group=>group.addEventListener('click',e=>{const b=e.target.closest('button[data-km]');if(!b)return;km=Number(b.dataset.km);selected();render();}));
-  $('goalTab').onclick=()=>setMode('goal');$('paceTab').onclick=()=>setMode('pace');
-  function setMode(next){mode=next;$('goalTab').classList.toggle('active',mode==='goal');$('paceTab').classList.toggle('active',mode==='pace');$('goalPanel').classList.toggle('hidden',mode!=='goal');$('pacePanel').classList.toggle('hidden',mode!=='pace');render();}
-  ['gh','gm','gs','pm','ps','interval'].forEach(id=>$(id).addEventListener('input',render));
-  $('copyBtn').onclick=async()=>{const txt=`PACE RUN\n${$('distanceLabel').textContent}\n${$('resultLabel').textContent}: ${$('bigResult').innerText}\n${rows.map(x=>`${x}km ${clock((mode==='goal'?(Number($('gh').value)*3600+Number($('gm').value)*60+Number($('gs').value)):((Number($('pm').value)*60+Number($('ps').value))*km))*x/km)}`).join('\n')}`;try{await navigator.clipboard.writeText(txt);$('copyBtn').textContent='복사 완료 ✓';setTimeout(()=>$('copyBtn').textContent='구간 기록표 복사하기',1800);}catch(e){$('copyBtn').textContent='복사할 수 없어요';}};
-  selected();render();
-  if('serviceWorker' in navigator && location.protocol.startsWith('http')) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-})();
+  rows.push({ d: km, seg: (km - prev) * paceSec, cum: km * paceSec, final: true });
+  return rows;
+}
+/*END*/
+
+var DIST = {
+  '5k':   { label: '5K',   km: 5 },
+  '10k':  { label: '10K',  km: 10 },
+  'half': { label: '하프', km: 21.0975, finalLabel: '하프 21.1km' },
+  'full': { label: '풀',   km: 42.195,  finalLabel: '풀 42.2km' },
+  'custom': { label: '직접 입력' }
+};
+var TARGETS = {
+  '5k':   [1200, 1350, 1500, 1800],
+  '10k':  [2700, 3000, 3300, 3600],
+  'half': [5400, 6300, 7200, 8100, 9000],
+  'full': [12600, 14400, 16200, 18000]
+};
+// 거리마다 목표 시간과 페이스를 따로 기억합니다. 처음 열면 아래 기본값에서 시작합니다.
+var DEF_TIME = { '5k': 1500, '10k': 3000, 'half': 7200, 'full': 14400, 'custom': 3600 };
+var DEF_PACE = { '5k': 300, '10k': 300, 'half': 341, 'full': 341, 'custom': 360 };
+var MEM_KEY = 'pace-mem-v1';
+var mem = { time: {}, pace: {}, dist: 'half', mode: 'time', km: 12 };
+try {
+  var saved = JSON.parse(localStorage.getItem(MEM_KEY) || 'null');
+  if (saved && typeof saved === 'object') {
+    if (saved.time && typeof saved.time === 'object') mem.time = saved.time;
+    if (saved.pace && typeof saved.pace === 'object') mem.pace = saved.pace;
+    if (DIST[saved.dist]) mem.dist = saved.dist;
+    if (saved.mode === 'time' || saved.mode === 'pace') mem.mode = saved.mode;
+    if (isFinite(saved.km) && saved.km > 0) mem.km = saved.km;
+  }
+} catch (e) {}
+var st = { mode: mem.mode, dist: mem.dist };
+function memTime(d) { var v = mem.time[d]; return v > 0 ? v : DEF_TIME[d]; }
+function memPace(d) { var v = mem.pace[d]; return v > 0 ? v : DEF_PACE[d]; }
+function saveMem() {
+  mem.dist = st.dist;
+  mem.mode = st.mode;
+  var k = parseFloat(String($('customKm').value).replace(',', '.'));
+  if (isFinite(k) && k > 0) mem.km = k;
+  try { localStorage.setItem(MEM_KEY, JSON.stringify(mem)); } catch (e) {}
+}
+function $(id) { return document.getElementById(id); }
+
+function num(id, max) {
+  var v = parseInt($(id).value, 10);
+  return isFinite(v) && v > 0 ? Math.min(v, max) : 0;
+}
+function curKm() {
+  if (st.dist === 'custom') {
+    var v = parseFloat(String($('customKm').value).replace(',', '.'));
+    return isFinite(v) && v > 0 ? Math.min(v, 1000) : 0;
+  }
+  return DIST[st.dist].km;
+}
+function timeSec() { return num('h', 99) * 3600 + num('m', 999) * 60 + num('s', 999); }
+function paceIn() { return num('pm', 99) * 60 + num('ps', 999); }
+function setTime(sec) {
+  var r = Math.round(sec);
+  $('h').value = Math.floor(r / 3600);
+  $('m').value = Math.floor((r % 3600) / 60);
+  $('s').value = r % 60;
+}
+function setPace(sec) {
+  var r = Math.round(sec);
+  $('pm').value = Math.floor(r / 60);
+  $('ps').value = r % 60;
+}
+
+function buildDistChips() {
+  var box = $('distChips');
+  box.innerHTML = '';
+  Object.keys(DIST).forEach(function (key) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.dataset.dist = key;
+    b.textContent = DIST[key].label;
+    box.appendChild(b);
+  });
+}
+
+function render() {
+  var d = curKm(), pace = 0, total = 0;
+  if (st.mode === 'time') {
+    total = timeSec();
+    pace = d > 0 && total > 0 ? total / d : 0;
+  } else {
+    pace = paceIn();
+    total = d > 0 && pace > 0 ? pace * d : 0;
+  }
+  var ok = pace > 0 && total > 0;
+
+  document.querySelectorAll('#distChips .chip').forEach(function (b) {
+    b.setAttribute('aria-pressed', String(b.dataset.dist === st.dist));
+  });
+  $('customWrap').hidden = st.dist !== 'custom';
+  $('modeTime').setAttribute('aria-pressed', String(st.mode === 'time'));
+  $('modePace').setAttribute('aria-pressed', String(st.mode === 'pace'));
+  $('timeInputs').hidden = st.mode !== 'time';
+  $('paceInputs').hidden = st.mode !== 'pace';
+
+  // 목표 기록 빠른 선택
+  var tbox = $('targetChips');
+  tbox.innerHTML = '';
+  var list = st.mode === 'time' ? (TARGETS[st.dist] || []) : [];
+  var cur = timeSec();
+  list.forEach(function (sec) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip small';
+    b.dataset.sec = sec;
+    b.textContent = fmtTime(sec);
+    b.setAttribute('aria-pressed', String(sec === cur));
+    tbox.appendChild(b);
+  });
+  tbox.hidden = list.length === 0;
+
+  // 결과 패널
+  if (st.mode === 'time') {
+    $('resLabel').textContent = '목표 달성에 필요한 페이스';
+    $('resMain').textContent = fmtPace(ok ? pace : 0);
+    $('resUnit').textContent = '/km';
+    $('stThirdLabel').textContent = '완주 기록';
+    $('stThird').textContent = ok ? fmtTime(total) : '--';
+  } else {
+    $('resLabel').textContent = '예상 완주 기록';
+    $('resMain').textContent = ok ? fmtTime(total) : '--:--';
+    $('resUnit').textContent = d > 0 ? fmtKm(d) + 'km' : '';
+    $('stThirdLabel').textContent = '1km 페이스';
+    $('stThird').textContent = ok ? fmtPace(pace) + ' /km' : '--';
+  }
+  $('stSpeed').textContent = ok ? (3600 / pace).toFixed(1) + ' km/h' : '--';
+  $('stMile').textContent = ok ? fmtPace(pace * 1.609344) + ' /mi' : '--';
+
+  // 구간 기록표
+  var body = $('splitBody');
+  body.innerHTML = '';
+  $('splitWrap').hidden = !ok;
+  $('splitEmpty').hidden = ok;
+  if (ok) {
+    splits(pace, d).forEach(function (r) {
+      var tr = document.createElement('tr');
+      if (r.final) tr.className = 'final';
+      var label = r.final && DIST[st.dist].finalLabel ? DIST[st.dist].finalLabel : fmtKm(r.d) + 'km';
+      tr.innerHTML = '<td>' + label + '</td><td>' + fmtTime(r.seg) + '</td><td>' + fmtTime(r.cum) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+}
+
+buildDistChips();
+
+$('distChips').addEventListener('click', function (e) {
+  var b = e.target.closest('.chip');
+  if (!b) return;
+  st.dist = b.dataset.dist;
+  setTime(memTime(st.dist));
+  setPace(memPace(st.dist));
+  saveMem();
+  render();
+});
+$('targetChips').addEventListener('click', function (e) {
+  var b = e.target.closest('.chip');
+  if (!b) return;
+  setTime(Number(b.dataset.sec));
+  mem.time[st.dist] = Number(b.dataset.sec);
+  saveMem();
+  render();
+});
+$('modeTime').addEventListener('click', function () {
+  if (st.mode === 'time') return;
+  var d = curKm(), p = paceIn();
+  if (d > 0 && p > 0) { setTime(p * d); mem.time[st.dist] = Math.round(p * d); }
+  st.mode = 'time';
+  saveMem();
+  render();
+});
+$('modePace').addEventListener('click', function () {
+  if (st.mode === 'pace') return;
+  var d = curKm(), t = timeSec();
+  if (d > 0 && t > 0) { setPace(t / d); mem.pace[st.dist] = Math.round(t / d); }
+  st.mode = 'pace';
+  saveMem();
+  render();
+});
+['h', 'm', 's'].forEach(function (id) {
+  $(id).addEventListener('input', function () {
+    var t = timeSec();
+    if (t > 0) mem.time[st.dist] = t;
+    saveMem();
+    render();
+  });
+});
+['pm', 'ps'].forEach(function (id) {
+  $(id).addEventListener('input', function () {
+    var p = paceIn();
+    if (p > 0) mem.pace[st.dist] = p;
+    saveMem();
+    render();
+  });
+});
+$('customKm').addEventListener('input', function () {
+  saveMem();
+  render();
+});
+
+// 저장된 값으로 입력칸을 채웁니다.
+$('customKm').value = mem.km;
+setTime(memTime(st.dist));
+setPace(memPace(st.dist));
+
+render();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
 </script>
 </body>
 </html>
