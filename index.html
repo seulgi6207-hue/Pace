@@ -162,7 +162,6 @@ tr.final td { font-weight: 700; border-top: 2px solid var(--accent); }
         <label class="field"><input type="number" id="m" inputmode="numeric" min="0" max="999" value="0"><span>분</span></label>
         <label class="field"><input type="number" id="s" inputmode="numeric" min="0" max="999" value="0"><span>초</span></label>
       </div>
-      <div class="chips" id="targetChips" aria-label="자주 쓰는 목표"></div>
     </div>
 
     <div class="group" id="paceInputs" hidden>
@@ -193,7 +192,7 @@ tr.final td { font-weight: 700; border-top: 2px solid var(--accent); }
       </table>
     </div>
     <p class="empty" id="splitEmpty" hidden>기록과 거리를 입력하면 구간별 통과 시간이 표시됩니다.</p>
-    <p class="note">일정한 페이스로 달린다고 가정한 값입니다. 하프는 21.0975km, 풀은 42.195km로 계산합니다.</p>
+    <p class="note">일정한 페이스로 달린다고 가정한 값입니다. 하프는 21.0975km, 풀은 42.195km로 계산합니다. (앱 버전 4)</p>
   </section>
 </main>
 
@@ -228,12 +227,6 @@ var DIST = {
   'half': { label: '하프', km: 21.0975, finalLabel: '하프 21.1km' },
   'full': { label: '풀',   km: 42.195,  finalLabel: '풀 42.2km' },
   'custom': { label: '직접 입력' }
-};
-var TARGETS = {
-  '5k':   [1200, 1350, 1500, 1800],
-  '10k':  [2700, 3000, 3300, 3600],
-  'half': [5400, 6300, 7200, 8100, 9000],
-  'full': [12600, 14400, 16200, 18000]
 };
 // 거리마다 목표 시간과 페이스를 따로 기억합니다. 처음 열면 아래 기본값에서 시작합니다.
 var DEF_TIME = { '5k': 1500, '10k': 3000, 'half': 7200, 'full': 14400, 'custom': 3600 };
@@ -320,22 +313,6 @@ function render() {
   $('timeInputs').hidden = st.mode !== 'time';
   $('paceInputs').hidden = st.mode !== 'pace';
 
-  // 목표 기록 빠른 선택
-  var tbox = $('targetChips');
-  tbox.innerHTML = '';
-  var list = st.mode === 'time' ? (TARGETS[st.dist] || []) : [];
-  var cur = timeSec();
-  list.forEach(function (sec) {
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'chip small';
-    b.dataset.sec = sec;
-    b.textContent = fmtTime(sec);
-    b.setAttribute('aria-pressed', String(sec === cur));
-    tbox.appendChild(b);
-  });
-  tbox.hidden = list.length === 0;
-
   // 결과 패널
   if (st.mode === 'time') {
     $('resLabel').textContent = '목표 달성에 필요한 페이스';
@@ -377,14 +354,6 @@ $('distChips').addEventListener('click', function (e) {
   st.dist = b.dataset.dist;
   setTime(memTime(st.dist));
   setPace(memPace(st.dist));
-  saveMem();
-  render();
-});
-$('targetChips').addEventListener('click', function (e) {
-  var b = e.target.closest('.chip');
-  if (!b) return;
-  setTime(Number(b.dataset.sec));
-  mem.time[st.dist] = Number(b.dataset.sec);
   saveMem();
   render();
 });
